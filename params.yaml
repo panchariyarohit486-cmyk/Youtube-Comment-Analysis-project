@@ -1,0 +1,9 @@
+make_dataset: 
+  test_size: 0.2
+  random_state: 42
+
+data_preprocessing:
+  remove_stopwords: true
+  keep_negations: ["not", "but", "however", "no", "yet"]
+  lemmatize: true
+

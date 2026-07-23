@@ -1,0 +1,24 @@
+stages:
+  make_dataset:
+    cmd: python src/data/make_dataset.py
+    deps:
+      - src/data/make_dataset.py
+    params:
+      - make_dataset.test_size
+      - make_dataset.random_state
+    outs:
+      - data/raw
+
+  data_preprocessing:
+    cmd: python src/data/data_preprocessing.py
+    deps:
+      - src/data/data_preprocessing.py
+      - data/raw
+    params:
+      - data_preprocessing.remove_stopwords
+      - data_preprocessing.keep_negations
+      - data_preprocessing.lemmatize
+    outs:
+      - data/processed
+
+    

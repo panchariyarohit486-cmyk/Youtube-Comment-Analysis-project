@@ -1,0 +1,47 @@
+schema: '2.0'
+stages:
+  make_dataset:
+    cmd: python src/data/make_dataset.py
+    deps:
+    - path: src/data/make_dataset.py
+      hash: md5
+      md5: 21195a9f5912cd3da7a90d588d3fe719
+      size: 3165
+    params:
+      params.yaml:
+        make_dataset.random_state: 42
+        make_dataset.test_size: 0.2
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: a4556aac99a7bfc72caebff032bcb13a.dir
+      size: 6873216
+      nfiles: 2
+  data_preprocessing:
+    cmd: python src/data/data_preprocessing.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: a4556aac99a7bfc72caebff032bcb13a.dir
+      size: 6873216
+      nfiles: 2
+    - path: src/data/data_preprocessing.py
+      hash: md5
+      md5: 844d1d7ed74a9f7d7de5aafeec2919af
+      size: 5034
+    params:
+      params.yaml:
+        data_preprocessing.keep_negations:
+        - not
+        - but
+        - however
+        - no
+        - yet
+        data_preprocessing.lemmatize: true
+        data_preprocessing.remove_stopwords: true
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: e98e8a2f2c914c53fa4c1ba25f181b03.dir
+      size: 5131685
+      nfiles: 2
