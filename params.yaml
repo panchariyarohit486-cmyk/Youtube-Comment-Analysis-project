@@ -12,3 +12,12 @@ build_features:
   ngram_range: [1, 3]
   random_state: 42
 
+train_model:
+  kernel: poly
+  C: 0.09669146694016018
+  gamma_type: value
+  gamma: 0.44466289554754435
+  degree: 4
+  coef0: 0.8872127425763265
+  class_weight: null
+  random_state: 42

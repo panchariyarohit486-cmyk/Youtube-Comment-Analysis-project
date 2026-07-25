@@ -33,3 +33,23 @@ stages:
     outs:
       - data/interim
       - model/vectorizer.pkl
+
+  train_model:
+    cmd: python src/models/train_model.py
+    deps:
+      - src/models/train_model.py
+      - data/interim
+    params:
+      - train_model.kernel
+      - train_model.C
+      - train_model.gamma_type
+      - train_model.gamma
+      - train_model.degree
+      - train_model.coef0
+      - train_model.class_weight
+      - train_model.random_state
+    outs:
+      - models/model.pkl
+    metrics:
+      - reports/metrics.json:
+          cache: false
