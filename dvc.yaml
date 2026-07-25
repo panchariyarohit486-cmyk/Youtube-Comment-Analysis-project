@@ -21,4 +21,15 @@ stages:
     outs:
       - data/processed
 
-    
+  build_features:
+    cmd: python src/features/build_features.py
+    deps:
+      - src/features/build_features.py
+      - data/processed
+    params:
+      - build_features.max_features
+      - build_features.ngram_range
+      - build_features.random_state
+    outs:
+      - data/interim
+      - model/vectorizer.pkl
