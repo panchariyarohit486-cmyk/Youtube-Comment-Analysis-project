@@ -49,7 +49,7 @@ stages:
       - train_model.class_weight
       - train_model.random_state
     outs:
-      - models/model.pkl
+      - model/model.pkl
     metrics:
       - reports/metrics.json:
           cache: false
