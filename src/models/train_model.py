@@ -5,6 +5,10 @@ import logging
 import yaml
 import numpy as np
 import scipy.sparse as sp
+
+from sklearnex import patch_sklearn
+patch_sklearn()  # must run BEFORE importing SVC — patches sklearn to use Intel oneDAL (multi-core)
+
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, classification_report
 
