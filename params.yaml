@@ -21,3 +21,16 @@ train_model:
   coef0: 0.8872127425763265
   class_weight: null
   random_state: 42
+  
+build_bert_features:
+  model_name: bert-base-uncased
+  max_length: 256
+
+train_bert:
+  model_name: bert-base-uncased
+  num_labels: 3
+  epochs: 10
+  batch_size: 16
+  learning_rate: 1e-5
+  eps: 1e-8
+  seed: 8

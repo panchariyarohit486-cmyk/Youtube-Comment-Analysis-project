@@ -74,3 +74,25 @@ stages:
       hash: md5
       md5: e7de8bc826a36484e3763e5e844e448d
       size: 28638
+  build_bert_features:
+    cmd: python src/features/build_bert_feature.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: a4556aac99a7bfc72caebff032bcb13a.dir
+      size: 6873216
+      nfiles: 2
+    - path: src/features/build_bert_feature.py
+      hash: md5
+      md5: 224ef52f7fa6a2058b7d438b89badbf3
+      size: 2762
+    params:
+      params.yaml:
+        build_bert_features.max_length: 256
+        build_bert_features.model_name: bert-base-uncased
+    outs:
+    - path: data/interim/bert
+      hash: md5
+      md5: dacd2114915507876045cd2d13685ac3.dir
+      size: 150235896
+      nfiles: 6

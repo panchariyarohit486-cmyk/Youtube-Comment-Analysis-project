@@ -9,47 +9,31 @@ stages:
     outs:
       - data/raw
 
-  data_preprocessing:
-    cmd: python src/data/data_preprocessing.py
+  build_bert_features:
+    cmd: python src/features/build_bert_feature.py
     deps:
-      - src/data/data_preprocessing.py
+      - src/features/build_bert_feature.py
       - data/raw
     params:
-      - data_preprocessing.remove_stopwords
-      - data_preprocessing.keep_negations
-      - data_preprocessing.lemmatize
+      - build_bert_features.model_name
+      - build_bert_features.max_length
     outs:
-      - data/processed
-
-  build_features:
-    cmd: python src/features/build_features.py
+      - data/interim/bert
+  train_bert:
+    cmd: python src/models/train_bert.py
     deps:
-      - src/features/build_features.py
-      - data/processed
+      - src/models/train_bert.py
+      - data/interim/bert
     params:
-      - build_features.max_features
-      - build_features.ngram_range
-      - build_features.random_state
+      - train_bert.model_name
+      - train_bert.num_labels
+      - train_bert.epochs
+      - train_bert.batch_size
+      - train_bert.learning_rate
+      - train_bert.eps
+      - train_bert.seed
     outs:
-      - data/interim
-      - model/vectorizer.pkl
-
-  train_model:
-    cmd: python src/models/train_model.py
-    deps:
-      - src/models/train_model.py
-      - data/interim
-    params:
-      - train_model.kernel
-      - train_model.C
-      - train_model.gamma_type
-      - train_model.gamma
-      - train_model.degree
-      - train_model.coef0
-      - train_model.class_weight
-      - train_model.random_state
-    outs:
-      - model/model.pkl
+      - model/bert
     metrics:
-      - reports/metrics.json:
+      - reports/bert_metrics.json:
           cache: false
