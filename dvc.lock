@@ -96,3 +96,34 @@ stages:
       md5: dacd2114915507876045cd2d13685ac3.dir
       size: 150235896
       nfiles: 6
+  train_bert:
+    cmd: python src/models/train_bert.py
+    deps:
+    - path: data/interim/bert
+      hash: md5
+      md5: dacd2114915507876045cd2d13685ac3.dir
+      size: 150235896
+      nfiles: 6
+    - path: src/models/train_bert.py
+      hash: md5
+      md5: b76191a0dbaea4e64b1bbfa7b8cad6fd
+      size: 6861
+    params:
+      params.yaml:
+        train_bert.batch_size: 16
+        train_bert.epochs: 3
+        train_bert.eps: 1e-08
+        train_bert.learning_rate: 1e-05
+        train_bert.model_name: bert-base-uncased
+        train_bert.num_labels: 3
+        train_bert.seed: 8
+    outs:
+    - path: model/bert
+      hash: md5
+      md5: 51ce826d6e7ea357f394d4ce9ddde3ef.dir
+      size: 438020826
+      nfiles: 1
+    - path: reports/bert_metrics.json
+      hash: md5
+      md5: 2ddbf6aa8d66ee5b696422dcc6c9303d
+      size: 1181

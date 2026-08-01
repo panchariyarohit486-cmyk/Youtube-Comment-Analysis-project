@@ -6,7 +6,8 @@ import numpy as np
 import torch
 import yaml
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler
-from transformers import BertForSequenceClassification, AdamW, get_linear_schedule_with_warmup
+from transformers import BertForSequenceClassification, get_linear_schedule_with_warmup
+from torch.optim import AdamW
 from sklearn.metrics import f1_score, accuracy_score, classification_report
 
 logger = logging.getLogger("train_bert")
@@ -18,7 +19,7 @@ console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
 FEATURES_PATH = "data/interim/bert"
-MODEL_PATH = "models/bert"
+MODEL_PATH = "model/bert"
 REPORTS_PATH = "reports"
 
 
@@ -36,15 +37,35 @@ def set_seed(seed: int):
 
 def load_tensors(path: str = FEATURES_PATH):
     train_ds = TensorDataset(
-        torch.load(os.path.join(path, "train_input_ids.pt")),
-        torch.load(os.path.join(path, "train_attention_mask.pt")),
-        torch.load(os.path.join(path, "train_labels.pt")),
+        torch.tensor(
+            np.load(os.path.join(path, "train_input_ids.npy")),
+            dtype=torch.long,
+        ),
+        torch.tensor(
+            np.load(os.path.join(path, "train_attention_mask.npy")),
+            dtype=torch.long,
+        ),
+        torch.tensor(
+            np.load(os.path.join(path, "train_labels.npy")),
+            dtype=torch.long,
+        ),
     )
+
     val_ds = TensorDataset(
-        torch.load(os.path.join(path, "val_input_ids.pt")),
-        torch.load(os.path.join(path, "val_attention_mask.pt")),
-        torch.load(os.path.join(path, "val_labels.pt")),
+        torch.tensor(
+            np.load(os.path.join(path, "val_input_ids.npy")),
+            dtype=torch.long,
+        ),
+        torch.tensor(
+            np.load(os.path.join(path, "val_attention_mask.npy")),
+            dtype=torch.long,
+        ),
+        torch.tensor(
+            np.load(os.path.join(path, "val_labels.npy")),
+            dtype=torch.long,
+        ),
     )
+
     return train_ds, val_ds
 
 
