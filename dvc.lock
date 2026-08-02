@@ -127,3 +127,33 @@ stages:
       hash: md5
       md5: 2ddbf6aa8d66ee5b696422dcc6c9303d
       size: 1181
+  model_evaluation:
+    cmd: python src/visualization/model_eval.py
+    deps:
+    - path: data/interim/bert
+      hash: md5
+      md5: dacd2114915507876045cd2d13685ac3.dir
+      size: 150235896
+      nfiles: 6
+    - path: model/bert
+      hash: md5
+      md5: 51ce826d6e7ea357f394d4ce9ddde3ef.dir
+      size: 438020826
+      nfiles: 1
+    - path: src/visualization/model_eval.py
+      hash: md5
+      md5: c14d4ac60211cb1a2c34aa460f223257
+      size: 5585
+    params:
+      params.yaml:
+        train_bert.model_name: bert-base-uncased
+        train_bert.num_labels: 3
+    outs:
+    - path: reports/eval_metrics.json
+      hash: md5
+      md5: b1d324fff0ab956b824ea9a855bb036e
+      size: 1222
+    - path: reports/experiment_info.json
+      hash: md5
+      md5: 25a46b8d3af644f12f139b6a811ecf7f
+      size: 120

@@ -37,3 +37,20 @@ stages:
     metrics:
       - reports/bert_metrics.json:
           cache: false
+    
+
+  model_evaluation:
+    cmd: python src/visualization/model_eval.py
+    deps:
+      - src/visualization/model_eval.py
+      - model/bert
+      - data/interim/bert
+    params:
+      - train_bert.model_name
+      - train_bert.num_labels
+    metrics:
+      - reports/eval_metrics.json:
+          cache: false
+    outs:
+      - reports/experiment_info.json:
+          cache: false
