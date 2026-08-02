@@ -54,3 +54,9 @@ stages:
     outs:
       - reports/experiment_info.json:
           cache: false
+
+  register_model:
+    cmd: python src/visualization/model_register.py
+    deps:
+      - src/visualization/model_register.py
+      - reports/experiment_info.json

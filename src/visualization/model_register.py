@@ -1,0 +1,84 @@
+import json
+import logging
+import mlflow
+import dagshub
+from mlflow.tracking import MlflowClient
+
+logger = logging.getLogger("register_model")
+logger.setLevel(logging.DEBUG)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+REPORTS_PATH = "reports"
+REGISTERED_MODEL_NAME = "bert_yt_comment_sentiment"
+
+
+def load_run_info(path: str = REPORTS_PATH) -> dict:
+    try:
+        with open(f"{path}/experiment_info.json", "r") as f:
+            info = json.load(f)
+        logger.debug("Loaded run info: %s", info)
+        return info
+    except FileNotFoundError as e:
+        logger.error("experiment_info.json not found — run model_evaluation.py first: %s", e)
+        raise
+
+
+def register_model(model_name: str, model_uri: str):
+    try:
+        model_version = mlflow.register_model(model_uri=model_uri, name=model_name)
+        logger.debug(
+            "Registered model '%s' version %s from %s",
+            model_name, model_version.version, model_uri,
+        )
+        return model_version
+    except Exception as e:
+        logger.error("Failed to register model: %s", e)
+        raise
+
+
+def transition_stage(model_name: str, version: str, stage: str = "Staging"):
+    """Move the newly registered version into a lifecycle stage
+    (None / Staging / Production / Archived)."""
+    try:
+        client = MlflowClient()
+        client.transition_model_version_stage(
+            name=model_name,
+            version=version,
+            stage=stage,
+            archive_existing_versions=False,
+        )
+        logger.debug("Transitioned model '%s' v%s to stage '%s'", model_name, version, stage)
+    except Exception as e:
+        logger.error("Failed to transition model stage: %s", e)
+        raise
+
+
+def main():
+    try:
+        # connect to DagsHub-hosted MLflow via browser auth
+        dagshub.init(
+            repo_owner="panchariyarohit486",
+            repo_name="youtube-sentiment-analysis",
+            mlflow=True,
+        )
+
+        run_info = load_run_info()
+        model_uri = run_info["model_uri"]
+
+        model_version = register_model(REGISTERED_MODEL_NAME, model_uri)
+        transition_stage(REGISTERED_MODEL_NAME, model_version.version, stage="Staging")
+
+        print(f"Registered '{REGISTERED_MODEL_NAME}' v{model_version.version} → Staging")
+        logger.debug("register_model completed successfully")
+
+    except Exception as e:
+        logger.error("Failed to run model registration: %s", e)
+        print(f"error : {e}")
+
+
+if __name__ == "__main__":
+    main()
