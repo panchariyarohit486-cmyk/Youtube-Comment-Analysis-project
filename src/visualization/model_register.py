@@ -27,9 +27,25 @@ def load_run_info(path: str = REPORTS_PATH) -> dict:
         raise
 
 
-def register_model(model_name: str, model_uri: str):
+def register_model(model_name: str, model_uri: str, run_id: str):
+    """Register a model version directly via MlflowClient, bypassing
+    mlflow.register_model()'s MLflow-3.x 'logged model' detection logic —
+    that logic fails against DagsHub's artifact listing format, even though
+    the model artifact itself was logged successfully."""
     try:
-        model_version = mlflow.register_model(model_uri=model_uri, name=model_name)
+        client = MlflowClient()
+
+        try:
+            client.get_registered_model(model_name)
+        except mlflow.exceptions.MlflowException:
+            client.create_registered_model(model_name)
+            logger.debug("Created new registered model '%s'", model_name)
+
+        model_version = client.create_model_version(
+            name=model_name,
+            source=model_uri,
+            run_id=run_id,
+        )
         logger.debug(
             "Registered model '%s' version %s from %s",
             model_name, model_version.version, model_uri,
@@ -68,8 +84,9 @@ def main():
 
         run_info = load_run_info()
         model_uri = run_info["model_uri"]
+        run_id = run_info["run_id"]
 
-        model_version = register_model(REGISTERED_MODEL_NAME, model_uri)
+        model_version = register_model(REGISTERED_MODEL_NAME, model_uri, run_id)
         transition_stage(REGISTERED_MODEL_NAME, model_version.version, stage="Staging")
 
         print(f"Registered '{REGISTERED_MODEL_NAME}' v{model_version.version} → Staging")
