@@ -1,0 +1,56 @@
+name: CI - DVC Pipeline & Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  dvc-pipeline:
+    runs-on: ubuntu-latest
+
+    env:
+      MLFLOW_TRACKING_URI: https://dagshub.com/panchariyarohit486/youtube-sentiment-analysis.mlflow
+      MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+      MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Configure DVC remote credentials
+        run: |
+          dvc remote modify origin --local auth basic
+          dvc remote modify origin --local user ${{ secrets.DAGSHUB_USERNAME }}
+          dvc remote modify origin --local password ${{ secrets.DAGSHUB_TOKEN }}
+
+      - name: Pull DVC-tracked data and models
+        run: dvc pull
+
+      - name: Reproduce DVC pipeline
+        run: dvc repro
+
+      - name: Run tests
+        run: |
+          if [ -d "tests" ]; then
+            pip install pytest
+            pytest tests/ -v
+          else
+            echo "No tests directory found, skipping test step."
+          fi
+
+      - name: Show pipeline status
+        if: always()
+        run: dvc status

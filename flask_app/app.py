@@ -15,9 +15,7 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
 
-# --------------------------------------------------
-# Logging
-# --------------------------------------------------
+
 
 logger = logging.getLogger("app")
 logger.setLevel(logging.DEBUG)
@@ -33,9 +31,7 @@ console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
 
-# --------------------------------------------------
-# Configuration
-# --------------------------------------------------
+
 
 REGISTERED_MODEL_NAME = "bert_yt_comment_sentiment"
 
@@ -64,9 +60,6 @@ LABEL_NAMES = {
 }
 
 
-# --------------------------------------------------
-# Flask
-# --------------------------------------------------
 
 app = Flask(__name__)
 
@@ -81,9 +74,7 @@ device = torch.device(
 logger.info("Using device: %s", device)
 
 
-# --------------------------------------------------
-# MLflow / DagsHub
-# --------------------------------------------------
+
 
 def get_latest_registered_version(model_name: str) -> str:
 
@@ -115,9 +106,9 @@ def get_latest_registered_version(model_name: str) -> str:
         return "unknown"
 
 
-# --------------------------------------------------
+
 # Load Model
-# --------------------------------------------------
+
 
 def load_artifacts():
 
@@ -173,9 +164,8 @@ def load_artifacts():
     logger.info("Model and tokenizer loaded successfully")
 
 
-# --------------------------------------------------
 # Prediction
-# --------------------------------------------------
+
 
 def predict_sentiment(texts: list) -> list:
 
@@ -517,9 +507,7 @@ def generate_chart():
         }), 500
 
 
-# --------------------------------------------------
 # Generate Word Cloud
-# --------------------------------------------------
 
 @app.route(
     "/generate_wordcloud",
@@ -589,9 +577,8 @@ def generate_wordcloud():
         }), 500
 
 
-# --------------------------------------------------
+
 # Generate Trend Graph
-# --------------------------------------------------
 
 @app.route(
     "/generate_trend_graph",
