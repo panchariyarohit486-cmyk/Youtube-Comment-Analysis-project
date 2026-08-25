@@ -1,5 +1,5 @@
 name: CI - DVC Pipeline & Tests
-# test 1 
+
 on:
   push:
     branches: [main]
@@ -28,13 +28,19 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements-ci.txt
 
       - name: Configure DVC remote credentials
         run: |
-          dvc remote modify origin --local auth basic
-          dvc remote modify origin --local user ${{ secrets.DAGSHUB_USERNAME }}
-          dvc remote modify origin --local password ${{ secrets.DAGSHUB_TOKEN }}
+          REMOTE_NAME=$(dvc remote list | head -n 1 | awk '{print $1}')
+          if [ -z "$REMOTE_NAME" ]; then
+            echo "No DVC remote configured in this repo. Skipping credential setup."
+            exit 1
+          fi
+          echo "Using DVC remote: $REMOTE_NAME"
+          dvc remote modify "$REMOTE_NAME" --local auth basic
+          dvc remote modify "$REMOTE_NAME" --local user "${{ secrets.DAGSHUB_USERNAME }}"
+          dvc remote modify "$REMOTE_NAME" --local password "${{ secrets.DAGSHUB_TOKEN }}"
 
       - name: Pull DVC-tracked data and models
         run: dvc pull
@@ -45,7 +51,6 @@ jobs:
       - name: Run tests
         run: |
           if [ -d "tests" ]; then
-            pip install pytest
             pytest tests/ -v
           else
             echo "No tests directory found, skipping test step."
