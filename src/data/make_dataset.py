@@ -60,8 +60,8 @@ def save_Data(train_df: pd.DataFrame, test_df: pd.DataFrame, data_path: str = RA
     try:
         os.makedirs(data_path, exist_ok=True)
 
-        train_df.to_csv(os.path.join(data_path, "train.csv"), index=False)
-        test_df.to_csv(os.path.join(data_path, "test.csv"), index=False)
+        train_df.to_csv(os.path.join(data_path, "train.csv"), index=False, lineterminator="\n")
+        test_df.to_csv(os.path.join(data_path, "test.csv"), index=False, lineterminator="\n")
 
         logger.debug("Train/test data saved to %s", data_path)
     except Exception as e:
