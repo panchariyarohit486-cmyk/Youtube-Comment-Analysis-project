@@ -3,7 +3,7 @@ import logging
 import yaml
 import pandas as pd
 import numpy as np
-import tensorflow as tf
+
 from transformers import BertTokenizer
 
 logger = logging.getLogger("build_bert_features")
