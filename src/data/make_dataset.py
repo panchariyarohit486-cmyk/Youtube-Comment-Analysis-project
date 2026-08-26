@@ -60,14 +60,19 @@ def save_Data(train_df: pd.DataFrame, test_df: pd.DataFrame, data_path: str = RA
     try:
         os.makedirs(data_path, exist_ok=True)
 
-        train_df.to_csv(os.path.join(data_path, "train.csv"), index=False, lineterminator="\n")
-        test_df.to_csv(os.path.join(data_path, "test.csv"), index=False, lineterminator="\n")
+        train_path = os.path.join(data_path, "train.csv")
+        test_path = os.path.join(data_path, "test.csv")
+
+        with open(train_path, "w", newline="", encoding="utf-8") as f:
+            train_df.to_csv(f, index=False, lineterminator="\n")
+
+        with open(test_path, "w", newline="", encoding="utf-8") as f:
+            test_df.to_csv(f, index=False, lineterminator="\n")
 
         logger.debug("Train/test data saved to %s", data_path)
     except Exception as e:
         logger.error("Failed to save train/test data: %s", e)
         raise
-
 
 def main():
     try:
