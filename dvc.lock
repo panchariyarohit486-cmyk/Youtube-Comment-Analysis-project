@@ -5,8 +5,8 @@ stages:
     deps:
     - path: src/data/make_dataset.py
       hash: md5
-      md5: 96de85efaf01a8cd34c87ec0d7416250
-      size: 3207
+      md5: 4bc763d8c28ba5d9d5cf1d739de74c06
+      size: 3407
     params:
       params.yaml:
         make_dataset.random_state: 42
