@@ -7,8 +7,9 @@ on:
     branches: [main]
 
 jobs:
-  dvc-pipeline:
+  ci:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     env:
       MLFLOW_TRACKING_URI: https://dagshub.com/panchariyarohit486/youtube-sentiment-analysis.mlflow
@@ -16,47 +17,115 @@ jobs:
       MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
 
     steps:
+
+      # --------------------------------------------------
+      # 1. Checkout repository
+      # --------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
+
+      # --------------------------------------------------
+      # 2. Setup Python
+      # --------------------------------------------------
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
 
+
+      # --------------------------------------------------
+      # 3. Install dependencies
+      # --------------------------------------------------
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --prefer-binary torch==2.11.0 torchaudio==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cpu
-          pip install -r requirements.txt
 
+          # CPU-only PyTorch for GitHub CI (avoids pulling the full CUDA
+          # toolkit, which caused a 45+ minute install hang previously)
+          pip install \
+            torch==2.11.0 \
+            torchaudio==2.11.0 \
+            torchvision==0.26.0 \
+            --index-url https://download.pytorch.org/whl/cpu
+
+          pip install --prefer-binary -r requirements.txt
+
+
+      # --------------------------------------------------
+      # 4. Verify Python / PyTorch environment
+      # --------------------------------------------------
+      - name: Verify environment
+        run: |
+          python --version
+          python -c "import torch; print('PyTorch:', torch.__version__)"
+          python -c "import torch; print('CUDA available:', torch.cuda.is_available())"
+
+
+      # --------------------------------------------------
+      # 5. Configure DVC remote
+      # --------------------------------------------------
       - name: Configure DVC remote credentials
         run: |
           REMOTE_NAME=$(dvc remote list | head -n 1 | awk '{print $1}')
+
           if [ -z "$REMOTE_NAME" ]; then
-            echo "No DVC remote configured in this repo. Skipping credential setup."
+            echo "No DVC remote configured."
             exit 1
           fi
+
           echo "Using DVC remote: $REMOTE_NAME"
+
           dvc remote modify "$REMOTE_NAME" --local auth basic
           dvc remote modify "$REMOTE_NAME" --local user "${{ secrets.DAGSHUB_USERNAME }}"
           dvc remote modify "$REMOTE_NAME" --local password "${{ secrets.DAGSHUB_TOKEN }}"
 
-      - name: Pull DVC-tracked data and models
+
+      # --------------------------------------------------
+      # 6. Download DVC-tracked artifacts (no dvc repro —
+      # avoids retraining BERT on a CPU-only runner)
+      # --------------------------------------------------
+      - name: Pull DVC artifacts
         run: dvc pull
 
-      - name: Reproduce DVC pipeline
-        run: dvc repro
 
-      - name: Run tests
+      # --------------------------------------------------
+      # 7. Verify DVC status
+      # --------------------------------------------------
+      - name: Check DVC status
+        run: dvc status
+
+
+      # --------------------------------------------------
+      # 8. Verify trained model exists
+      # --------------------------------------------------
+      - name: Verify model artifacts
         run: |
-          if [ -d "tests" ]; then
-            pytest tests/ -v
+          if [ -d "model/bert" ]; then
+            echo "BERT model directory found."
+            ls -lah model/bert
           else
-            echo "No tests directory found, skipping test step."
+            echo "BERT model directory not found."
+            exit 1
           fi
 
+
+      # --------------------------------------------------
+      # 9. Run tests (model load / signature / performance)
+      # --------------------------------------------------
+      - name: Run tests
+        run: |
+          if [ -d "scripts" ]; then
+            pytest scripts/ -v
+          else
+            echo "No scripts directory found, skipping tests."
+          fi
+
+
+      # --------------------------------------------------
+      # 10. Final DVC status
+      # --------------------------------------------------
       - name: Show pipeline status
         if: always()
         run: dvc status
