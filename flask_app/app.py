@@ -11,6 +11,7 @@ from transformers import BertTokenizer, BertForSequenceClassification
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from flask_cors import CORS
 
 from wordcloud import WordCloud
 
@@ -44,7 +45,16 @@ LABEL_NAMES = {-1: "negative", 0: "neutral", 1: "positive"}
 
 
 app = Flask(__name__)
-
+CORS(
+    app,
+    resources={
+        r"/*": {
+            "origins": "*",
+            "methods": ["GET", "POST", "OPTIONS"],
+            "allow_headers": ["Content-Type"]
+        }
+    }
+)
 model = None
 tokenizer = None
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
